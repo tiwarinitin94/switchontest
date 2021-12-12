@@ -156,10 +156,9 @@ class MyTabWidget(QWidget):
         self.count_bad=[]
         k=0
         for i in self.alldata:
-            time= i[3].strftime("%H:%M")
 
-            if(i[3] not in  self.dates):
-                self.dates.append(i[3])
+            if(i[3].strftime("%H:%M") not in  self.dates):
+                self.dates.append(i[3].strftime("%H:%M"))
                 k=len(self.dates)-1
                 self.count_good.append([])
                 self.count_bad.append([])
@@ -174,7 +173,8 @@ class MyTabWidget(QWidget):
     def createMatplot(self):
         diff=6000
         self.getDataAligned()
-        xpoints = np.array(self.dates,dtype='datetime64[D]')
+        xpoints = np.array(self.dates)
+        #dtype='datetime64[D]'
         #np.array([ self.alldata[i*diff][3].strftime("%H:%M") for i in range(4)] )
 
         ypoints = np.array([len(i) for i in self.count_good])
