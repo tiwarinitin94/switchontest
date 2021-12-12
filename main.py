@@ -43,7 +43,6 @@ class DataConnection():
             k=k+1
             status = random.choice(["Good", "Bad"])
             if k==6000:
-
                 date_data = date_data + datetime.timedelta(minutes=30)
                 k=0
 
@@ -58,8 +57,8 @@ class DataConnection():
         fixture_count = self.mycursor.fetchone()[0]
         return fixture_count
 
-    def getAllData(self,table_name,conditon=""):
-        sql = "SELECT * FROM "+table_name+condition
+    def getAllData(self,table_name):
+        sql = "SELECT * FROM "+table_name
         self.mycursor.execute(sql)
 
         return self.mycursor.fetchall()
@@ -138,6 +137,8 @@ class MyTabWidget(QWidget):
 
     def genrateDataAnalytic(self):
         self.connect_data.generateData()
+
+
     def addDropDown(self):
         self.dropdown= QComboBox(self)
         self.dropdown.setGeometry(10,10,20,10)
@@ -148,13 +149,40 @@ class MyTabWidget(QWidget):
     def dropDownChange(self,i):
         print(self.dropdown.currentText())
 
+
+    def getDataAligned(self):
+        self.dates=[]
+        self.count_good=[]
+        self.count_bad=[]
+        k=0
+        for i in self.alldata:
+            time= i[3].strftime("%H:%M")
+
+            if(i[3] not in  self.dates):
+                self.dates.append(i[3])
+                k=len(self.dates)-1
+                self.count_good.append([])
+                self.count_bad.append([])
+
+            if(i[2]=="Good"):
+                self.count_good[k].append("Good")
+            else:
+                self.count_bad[k].append("Bad")
+
+
+
     def createMatplot(self):
         diff=6000
-        xpoints = np.array([ self.alldata[i*diff][3].strftime("%H:%M") for i in range(4)] )
+        self.getDataAligned()
+        xpoints = np.array(self.dates,dtype='datetime64[D]')
+        #np.array([ self.alldata[i*diff][3].strftime("%H:%M") for i in range(4)] )
 
-        ypoints = np.array([0,0,0,0],  dtype=float)
+        ypoints = np.array([len(i) for i in self.count_good])
+        ypoints1 = np.array([len(i) for i in self.count_bad])
         #fig = plt.plot(xpoints, ypoints)
-
+        print(xpoints)
+        print(ypoints)
+        print(ypoints1)
         # plot
         self.figure = Figure()
 
@@ -164,7 +192,9 @@ class MyTabWidget(QWidget):
         self.canvas = FigureCanvas(self.figure)
 
 
-        self.figure.add_subplot(212).plot(xpoints, ypoints)
+
+        self.figure.gca().bar(xpoints, ypoints,color='g')
+        self.figure.gca().bar(xpoints, ypoints1,bottom=ypoints, color='y')
 
 
         # this is the Navigation widget
