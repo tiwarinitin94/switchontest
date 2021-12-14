@@ -121,7 +121,7 @@ class MyTabWidget(QWidget):
 
         self.addDropDown()
 
-        self.createMatplot()
+        self.createMatplot([],[],[])
         # self.tab1.layout.addWidget(self.l,0,0)
         self.tab1.layout.addRow(self.dropdown)
 
@@ -148,6 +148,15 @@ class MyTabWidget(QWidget):
 
     def dropDownChange(self,i):
         print(self.dropdown.currentText())
+        self.canvas.setParent(None)
+        self.getDataAligned()
+        xpoints = np.array(self.dates)
+        ypoints = np.array([len(i) for i in self.count_good])
+        ypoints1 = np.array([len(i) for i in self.count_bad])
+        self.createMatplot(xpoints,ypoints,ypoints1)
+        self.tab1.layout.addRow(self.canvas)
+
+
 
 
     def getDataAligned(self):
@@ -170,21 +179,20 @@ class MyTabWidget(QWidget):
 
 
 
-    def createMatplot(self):
-        diff=6000
-        self.getDataAligned()
-        xpoints = np.array(self.dates)
+    def createMatplot(self,xpoints,ypoints,ypoints1):
+
         #dtype='datetime64[D]'
         #np.array([ self.alldata[i*diff][3].strftime("%H:%M") for i in range(4)] )
 
-        ypoints = np.array([len(i) for i in self.count_good])
-        ypoints1 = np.array([len(i) for i in self.count_bad])
+
         #fig = plt.plot(xpoints, ypoints)
         print(xpoints)
         print(ypoints)
         print(ypoints1)
         # plot
         self.figure = Figure()
+
+
 
         # this is the Canvas Widget that displays the `figure`
         # it takes the `figure` instance as a parameter to __init__
@@ -199,7 +207,7 @@ class MyTabWidget(QWidget):
 
         # this is the Navigation widget
         # it takes the Canvas widget and a parent
-        self.toolbar = NavigationToolbar(self.canvas, self)
+        #self.toolbar = NavigationToolbar(self.canvas, self)
 
         # Just some button connected to `plot` method
 
