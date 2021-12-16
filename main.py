@@ -97,6 +97,8 @@ class MyTabWidget(QWidget):
         self.tab1 = QWidget()
         self.tab2 = QWidget()
 
+        self.tab2_defult=1 #for showing all data
+
         self.tabs.resize(900, 900)
 
         # Add tabs
@@ -181,64 +183,127 @@ class MyTabWidget(QWidget):
 
     def createMatplot(self,xpoints,ypoints,ypoints1):
 
-        #dtype='datetime64[D]'
-        #np.array([ self.alldata[i*diff][3].strftime("%H:%M") for i in range(4)] )
-
-
-        #fig = plt.plot(xpoints, ypoints)
-        print(xpoints)
-        print(ypoints)
-        print(ypoints1)
         # plot
         self.figure = Figure()
 
 
 
-        # this is the Canvas Widget that displays the `figure`
-        # it takes the `figure` instance as a parameter to __init__
-
         self.canvas = FigureCanvas(self.figure)
 
+        self.figure.gca().bar(xpoints, ypoints,color='g',label="Good")
+        self.figure.gca().bar(xpoints, ypoints1,bottom=ypoints, color='r',label="Bad")
 
 
-        self.figure.gca().bar(xpoints, ypoints,color='g')
-        self.figure.gca().bar(xpoints, ypoints1,bottom=ypoints, color='y')
-
-
-        # this is the Navigation widget
-        # it takes the Canvas widget and a parent
-        #self.toolbar = NavigationToolbar(self.canvas, self)
-
-        # Just some button connected to `plot` method
 
 
     def setGalleryTab(self):
+        self.vboxlayout = QVBoxLayout(self)
         self.tab2.layout = QGridLayout(self)
+
         pics = [
-                "1.png",
-                "2.png",
-                "1.png",
-                "2.png",
-                ]*4
-        print(pics)
-        self.populate(pics, QSize(64,64))
-        self.tab2.setLayout(self.tab2.layout)
+                "1.png", #Good
+                "2.png", #Bad
+                ]
+        self.vLayout = QHBoxLayout(self)
+
+        self.populate(pics, QSize(64,64),1)
 
 
-    def populate(self, pics, size, imagesPerRow=4,
+
+
+
+        #self.tab2.setLayout(vLayout)
+        self.setTab2Data()
+
+
+
+    def setTab2Data(self):
+        pics = [
+            "1.png",  # Good
+            "2.png",  # Bad
+        ]
+        for i in reversed(range(self.vboxlayout.count())):
+            if self.vboxlayout.itemAt(i).widget() is not None:
+                self.vboxlayout.itemAt(i).widget().setParent(None)
+
+        for i in reversed(range(self.vLayout.count())):
+            if self.vLayout.itemAt(i).widget() is not None:
+                self.vLayout.itemAt(i).widget().setParent(None)
+
+        self.vLayout.addItem(QtWidgets.QSpacerItem(0, 0, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum))
+        btn1 = QtWidgets.QPushButton('All')
+        # vLayout.addWidget(btn1, alignment=QtCore.Qt.AlignRight)
+
+        btn2 = QtWidgets.QPushButton('Good')
+        # vLayout.addWidget(btn2, alignment=QtCore.Qt.AlignRight)
+
+        btn3 = QtWidgets.QPushButton('Bad')
+        # vLayout.addWidget(btn3, alignment=QtCore.Qt.AlignRight)
+
+        self.vLayout.addWidget(btn1)
+        self.vLayout.addWidget(btn2)
+        self.vLayout.addWidget(btn3)
+
+        btn1.clicked.connect(lambda: self.populate(pics, QSize(64, 64), 1))
+        btn2.clicked.connect(lambda: self.populate(pics, QSize(64, 64), 2))
+        btn3.clicked.connect(lambda: self.populate(pics, QSize(64, 64), 3))
+        self.vboxlayout.addLayout(self.vLayout)
+        self.vboxlayout.addLayout(self.tab2.layout)
+        self.tab2.setLayout(self.vboxlayout)
+
+    def populate(self, pics, size,data_type, imagesPerRow=6,
                  flags=Qt.KeepAspectRatioByExpanding):
         row = col = 0
-        for pic in pics:
-            label = ImageLabel("")
-            pixmap = QPixmap(pic)
-            pixmap = pixmap.scaled(size, flags)
-            label.setPixmap(pixmap)
+        print(data_type)
+
+        self.tab2.layout.setParent(None)
+        for i in reversed(range(self.tab2.layout.count())):
+            if self.tab2.layout.itemAt(i).widget() is not None:
+                self.tab2.layout.itemAt(i).widget().setParent(None)
+
+        self.tab2.layout = QGridLayout(self)
+        count=0
+        for i in self.alldata:
+            print(i[2])
+            if (i[2] == "Good") and (data_type == 2):
+                label = ImageLabel("Good")
+                pixmap = QPixmap(pics[0])
+                pixmap = pixmap.scaled(size, flags)
+                label.setPixmap(pixmap)
+                print("Good"+str(data_type))
+                count+=1
+            elif (i[2] == "Bad") and (data_type== 3):
+                label = ImageLabel("Bad")
+                pixmap = QPixmap(pics[1])
+                pixmap = pixmap.scaled(size, flags)
+                label.setPixmap(pixmap)
+                print("Bad")
+                count += 1
+            else:
+                if (i[2] == "Bad") :
+                    label = ImageLabel("Bad")
+                    pixmap = QPixmap(pics[0])
+                    pixmap = pixmap.scaled(size, flags)
+                    label.setPixmap(pixmap)
+                    print("Bad"+str(data_type)+ i[2])
+                    count += 1
+                else:
+                    label = ImageLabel("Good")
+                    pixmap = QPixmap(pics[1])
+                    pixmap = pixmap.scaled(size, flags)
+                    label.setPixmap(pixmap)
+                    print("Good")
+                    count += 1
+
+
             self.tab2.layout.addWidget(label, row, col)
             col += 1
+            if count==60:
+                break
             if col % imagesPerRow == 0:
                 row += 1
                 col = 0
-
+        self.setTab2Data()
 
 
 
